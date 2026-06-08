@@ -1,148 +1,119 @@
 from __future__ import annotations
-
 import numpy as np
 
-
 def mean(arr, axis=None):
-    """Arithmetic mean, ignoring NaN values.
-
+    """Average value across the array, skipping any NaN entries.
     Parameters
     ----------
     arr : array-like
         Input data of any shape.
     axis : int or None
-        Axis along which the mean is computed. None flattens first.
-
+        Axis to reduce along. None flattens the whole array first.
     Returns
     -------
     np.ndarray or float
-        Mean value(s). Shape is ``arr.shape`` with ``axis`` removed.
-
+        Mean value(s). Shape is arr.shape with axis removed.
     Time complexity: O(n)
     """
     arr = np.asarray(arr, dtype=float)
     return np.nanmean(arr, axis=axis)
 
-
 def median(arr, axis=None):
-    """Median, ignoring NaN values.
-
+    """Middle value of the array, skipping any NaN entries.
     Parameters
     ----------
     arr : array-like
         Input data of any shape.
     axis : int or None
-        Axis along which the median is computed.
-
+        Axis to reduce along.
     Returns
     -------
     np.ndarray or float
-
     Time complexity: O(n log n)
     """
     arr = np.asarray(arr, dtype=float)
     return np.nanmedian(arr, axis=axis)
 
-
 def std(arr, axis=None, ddof=0):
-    """Standard deviation, ignoring NaN values.
-
+    """How spread out the values are, skipping NaNs.
     Parameters
     ----------
     arr : array-like
         Input data of any shape.
     axis : int or None
-        Reduction axis.
+        Axis to reduce along.
     ddof : int
-        Delta degrees of freedom. 0 for population, 1 for sample.
-
+        Degrees of freedom. 0 for the whole population, 1 for a sample.
     Returns
     -------
     np.ndarray or float
-
     Time complexity: O(n)
     """
     arr = np.asarray(arr, dtype=float)
     return np.nanstd(arr, axis=axis, ddof=ddof)
 
-
 def var(arr, axis=None, ddof=0):
-    """Variance, ignoring NaN values.
-
+    """Variance of the array, skipping NaN entries.
     Parameters
     ----------
     arr : array-like
         Input data of any shape.
     axis : int or None
-        Reduction axis.
+        Axis to reduce along.
     ddof : int
-        Delta degrees of freedom.
-
+        Degrees of freedom.
     Returns
     -------
     np.ndarray or float
-
     Time complexity: O(n)
     """
     arr = np.asarray(arr, dtype=float)
     return np.nanvar(arr, axis=axis, ddof=ddof)
 
-
 def minimum(arr, axis=None):
-    """Minimum value, ignoring NaN entries.
-
+    """Smallest value in the array, ignoring NaNs.
     Parameters
     ----------
     arr : array-like
         Input data.
     axis : int or None
-        Reduction axis.
-
+        Axis to reduce along.
     Returns
     -------
     np.ndarray or float
-
     Time complexity: O(n)
     """
     arr = np.asarray(arr, dtype=float)
     return np.nanmin(arr, axis=axis)
 
-
 def maximum(arr, axis=None):
-    """Maximum value, ignoring NaN entries.
-
+    """Largest value in the array, ignoring NaNs.
     Parameters
     ----------
     arr : array-like
         Input data.
     axis : int or None
-        Reduction axis.
-
+        Axis to reduce along.
     Returns
     -------
     np.ndarray or float
-
     Time complexity: O(n)
     """
     arr = np.asarray(arr, dtype=float)
     return np.nanmax(arr, axis=axis)
 
-
 def summary(arr, axis=None):
-    """Dictionary of descriptive statistics for quick exploration.
-
+    """Quick snapshot of the key descriptive stats in one go.
     Parameters
     ----------
     arr : array-like
         Input data.
     axis : int or None
-        Axis along which stats are computed. None reduces the whole array.
-
+        Axis to reduce along. None reduces the whole array.
     Returns
     -------
     dict
-        Keys: ``mean``, ``median``, ``std``, ``min``, ``max``, ``count_nan``.
-
+        Keys: mean, median, std, min, max, count_nan.
     Time complexity: O(n)
     """
     arr = np.asarray(arr, dtype=float)
@@ -155,26 +126,21 @@ def summary(arr, axis=None):
         "count_nan": int(np.sum(np.isnan(arr))),
     }
 
-
 def welford_update(existing_aggregate, new_value):
-    """One-step Welford online variance update.
-
-    Takes ``(count, mean, M2)`` and a new scalar, returns updated
-    ``(count, mean, M2)``. Allows computing variance in a single
-    streaming pass without storing all values.
-
+    """One step of Welford's online algorithm for running mean and variance.
+    Takes the current state and one new value, returns the updated state.
+    This lets us compute variance in a single pass without keeping all
+    the raw data around.
     Parameters
     ----------
     existing_aggregate : tuple of (int, float, float)
-        Current state ``(count, mean, M2)``.
+        Current state as (count, mean, M2).
     new_value : float
-        Next observation.
-
+        The next value to incorporate.
     Returns
     -------
     tuple of (int, float, float)
-        Updated ``(count, mean, M2)``.
-
+        Updated (count, mean, M2).
     Time complexity: O(1)
     """
     count, mean_val, m2 = existing_aggregate
@@ -185,26 +151,22 @@ def welford_update(existing_aggregate, new_value):
     m2 += delta * delta2
     return count, mean_val, m2
 
-
 def welford_finalize(count, mean_val, m2, ddof=0):
-    """Finalise Welford accumulator into ``(mean, variance)``.
-
+    """Turn the Welford accumulator into a usable mean and variance.
     Parameters
     ----------
     count : int
-        Total observations processed.
+        Total number of values processed.
     mean_val : float
-        Running mean.
+        Running mean accumulated so far.
     m2 : float
-        Sum of squared deviations.
+        Sum of squared deviations accumulated so far.
     ddof : int
-        0 for population, 1 for sample variance.
-
+        0 for population variance, 1 for sample variance.
     Returns
     -------
     tuple of (float, float)
-        ``(mean, variance)``. Returns ``(nan, nan)`` when ``count <= ddof``.
-
+        (mean, variance). Returns (nan, nan) if count is too small.
     Time complexity: O(1)
     """
     if count == 0 or count <= ddof:
@@ -212,29 +174,24 @@ def welford_finalize(count, mean_val, m2, ddof=0):
     variance = m2 / (count - ddof)
     return mean_val, variance
 
-
 def histogram(arr, bins=10, range=None):
-    """Compute a histogram, ignoring NaN values.
-
+    """Count how many values fall into each bin, ignoring NaNs.
     Parameters
     ----------
     arr : array-like
-        Input data (flattened internally).
+        Input data, flattened internally.
     bins : int
-        Number of equal-width bins. Must be >= 1.
+        Number of equal-width bins. Must be at least 1.
     range : tuple of (float, float) or None
-        Bin range. None uses ``(nanmin, nanmax)``.
-
+        Lower and upper bin boundaries. None uses the data range.
     Returns
     -------
-    counts : np.ndarray, shape ``(bins,)``
-    bin_edges : np.ndarray, shape ``(bins + 1,)``
-
+    counts : np.ndarray, shape (bins,)
+    bin_edges : np.ndarray, shape (bins + 1,)
     Raises
     ------
     ValueError
-        If ``bins < 1``.
-
+        If bins is less than 1.
     Time complexity: O(n)
     """
     if bins < 1:
@@ -243,28 +200,23 @@ def histogram(arr, bins=10, range=None):
     clean = arr[~np.isnan(arr)].ravel()
     return np.histogram(clean, bins=bins, range=range)
 
-
 def quantile(arr, q, axis=None):
-    """Compute quantile(s) along a given axis, ignoring NaN values.
-
+    """Value below which q fraction of the data falls, ignoring NaNs.
     Parameters
     ----------
     arr : array-like
         Input data.
     q : float or array-like
-        Quantile(s) in ``[0, 1]``.
+        Quantile(s) between 0 and 1. For example 0.5 gives the median.
     axis : int or None
-        Reduction axis.
-
+        Axis to reduce along.
     Returns
     -------
     np.ndarray or float
-
     Raises
     ------
     ValueError
-        If any value in ``q`` is outside ``[0, 1]``.
-
+        If any value in q is outside [0, 1].
     Time complexity: O(n log n)
     """
     arr = np.asarray(arr, dtype=float)
@@ -272,3 +224,136 @@ def quantile(arr, q, axis=None):
     if np.any((q < 0) | (q > 1)):
         raise ValueError("All quantile values must be in [0, 1].")
     return np.nanpercentile(arr, q * 100, axis=axis)
+
+class StreamingStats:
+    """
+    Track descriptive statistics incrementally as data arrives in chunks.
+    Instead of storing every value we have seen, we keep running totals
+    that get updated each time a new chunk comes in. Memory usage stays
+    constant no matter how much data has been processed.
+    """
+    def __init__(self, window_size: int | None = None) -> None:
+        """
+        Parameters
+        ----------
+        window_size : int or None
+            If given, only the last window_size chunks are used
+            to compute stats. None means use everything seen so far.
+        """
+        self.window_size = window_size
+        self._count = 0
+        self._mean = None
+        self._m2 = None
+        self._chunks: list = []
+        self._max_chunks = window_size
+    def update_stats(self, X_chunk: np.ndarray) -> "StreamingStats":
+        """
+        Feed in a new chunk and update all running statistics.
+        Uses Welford's algorithm for mean and variance so we never
+        need to store raw values from previous chunks.
+        Parameters
+        ----------
+        X_chunk : array-like, shape (n_samples,) or (n_samples, n_features)
+            New chunk of data to incorporate.
+        Returns
+        -------
+        self
+        """
+        X_chunk = np.asarray(X_chunk, dtype=float).ravel()
+        self._chunks.append(X_chunk)
+        if self._max_chunks is not None and len(self._chunks) > self._max_chunks:
+            # drop the oldest chunk when the window is full
+            self._chunks.pop(0)
+        # update running mean and variance one value at a time
+        for val in X_chunk:
+            if np.isnan(val):
+                continue
+            self._count += 1
+            if self._mean is None:
+                self._mean = val
+                self._m2 = 0.0
+            else:
+                delta = val - self._mean
+                self._mean += delta / self._count
+                delta2 = val - self._mean
+                self._m2 += delta * delta2
+        return self
+    def result(self) -> dict:
+        """
+        Return all statistics from data seen so far.
+        Returns
+        -------
+        dict
+            Keys: mean, variance, std, min, max, count.
+            Returns NaN values if no data has been fed in yet.
+        """
+        if self._count == 0 or self._mean is None:
+            return {
+                "mean": float("nan"),
+                "variance": float("nan"),
+                "std": float("nan"),
+                "min": float("nan"),
+                "max": float("nan"),
+                "count": 0,
+            }
+        variance = self._m2 / self._count if self._count > 1 else 0.0
+        all_data = np.concatenate(self._chunks)
+        return {
+            "mean": self._mean,
+            "variance": variance,
+            "std": float(np.sqrt(variance)),
+            "min": float(np.nanmin(all_data)),
+            "max": float(np.nanmax(all_data)),
+            "count": self._count,
+        }
+    def quantile(self, q: float) -> float:
+        """
+        Compute a quantile from all chunks stored so far.
+        Parameters
+        ----------
+        q : float
+            Quantile between 0 and 1. For example 0.5 gives the median.
+        Returns
+        -------
+        float
+        Raises
+        ------
+        ValueError
+            If no data yet or q is out of range.
+        """
+        if not self._chunks:
+            raise ValueError("No data yet — call update_stats first.")
+        if q < 0 or q > 1:
+            raise ValueError("q must be between 0 and 1.")
+        all_data = np.concatenate(self._chunks)
+        return float(np.nanpercentile(all_data, q * 100))
+    def histogram(self, bins: int = 10):
+        """
+        Compute a histogram from all chunks stored so far.
+        Parameters
+        ----------
+        bins : int
+            Number of bins. Must be at least 1.
+        Returns
+        -------
+        counts : np.ndarray
+        bin_edges : np.ndarray
+        Raises
+        ------
+        ValueError
+            If no data yet or bins is less than 1.
+        """
+        if not self._chunks:
+            raise ValueError("No data yet — call update_stats first.")
+        if bins < 1:
+            raise ValueError("bins must be at least 1.")
+        all_data = np.concatenate(self._chunks)
+        clean = all_data[~np.isnan(all_data)]
+        return np.histogram(clean, bins=bins)
+    def reset(self) -> "StreamingStats":
+        """Clear everything and start from scratch."""
+        self._count = 0
+        self._mean = None
+        self._m2 = None
+        self._chunks = []
+        return self
