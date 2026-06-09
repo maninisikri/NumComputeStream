@@ -137,7 +137,8 @@ class DecisionTreeClassifier:
         best_feature = None
         best_threshold = None
         parent_gini = self._gini(y)
-        features = np.arange(n_features)
+        # pick which features to consider at this split
+        features = np.arange(n_features) 
         if self.max_features is not None:
             features = np.random.choice(
                 n_features,
@@ -149,7 +150,8 @@ class DecisionTreeClassifier:
             for threshold in thresholds:
                 left_mask = X[:, feature] <= threshold
                 right_mask = ~left_mask
-                if left_mask.sum() == 0 or right_mask.sum() == 0:
+                # skip this threshold if it doesn't actually split the data
+                if left_mask.sum() == 0 or right_mask.sum() == 0: 
                     continue
                 left_gini = self._gini(y[left_mask])
                 right_gini = self._gini(y[right_mask])
@@ -165,7 +167,8 @@ class DecisionTreeClassifier:
     def _grow(self, X, y, depth):
         """Recursively build the tree by splitting nodes until we hit a stopping condition."""
         n_samples = len(y)
-        if (depth >= self.max_depth or
+        # stop growing if we have hit max depth, too few samples, or a pure node
+        if (depth >= self.max_depth or  
                 n_samples < self.min_samples_split or
                 len(np.unique(y)) == 1):
             return DecisionNode(value=self._most_common(y))
