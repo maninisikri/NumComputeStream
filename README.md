@@ -6,7 +6,7 @@ Extends the NumCompute toolkit with incremental learning support, ensemble metho
 
 > **Course:** COMP-5004 — Programming for AI
 > **University:** University of Adelaide
-> **Author:** Manini Sikri
+> **Author:** Manini Sikri (a3190867)
 
 ---
 
@@ -22,7 +22,7 @@ Extends the NumCompute toolkit with incremental learning support, ensemble metho
   - stream.py — StreamTrainer for chunk-based incremental learning
   - pipeline.py — Pipeline and FeatureUnion with partial_fit
   - visualise.py — Matplotlib plots for streaming metrics
-- tests/ — 30 unit tests
+- tests/ — 43 unit tests
 - demo/stream_demo.ipynb — End-to-end streaming demo
 - benchmark/
 - README.md
@@ -123,7 +123,7 @@ All classes support `fit()`, `transform()`, `fit_transform()` and `partial_fit()
 pytest tests/ -v
 ```
 
-30 unit tests covering all modules including edge cases like empty chunks, NaN values, unfitted models, and streaming updates.
+43 unit tests covering all modules including edge cases like empty chunks, NaN values, unfitted models, and streaming updates.
 
 ---
 
